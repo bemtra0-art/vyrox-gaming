@@ -1,0 +1,295 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VYROX Gaming</title>
+<style>
+:root{--bg:#101022;--panel:#1c1a36;--panel2:#272344;--purple:#8059ff;--text:#f7f5ff;--muted:#a8a5c5}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+.sidebar{position:fixed;top:0;bottom:0;left:0;width:76px;background:#1b1934;border-right:1px solid #393258;display:flex;flex-direction:column;align-items:center;padding:20px 10px;gap:15px;z-index:20;transition:.25s}
+.sidebar.open{width:220px;align-items:stretch}
+.logo{background:linear-gradient(135deg,#a18aff,#5c38d8);width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:26px;font-weight:bold}
+.sidebar.open .logo{margin:auto}
+.navlink{display:flex;align-items:center;justify-content:center;gap:12px;min-height:48px;width:100%;border-radius:14px;color:#bcb7d9;transition:.2s}
+.navlink:hover,.navlink.active{background:#6e4ef2;color:white}
+.navlink .ico{font-size:23px;min-width:28px;text-align:center}
+.navlink .label{display:none}
+.sidebar.open .navlink{justify-content:flex-start;padding:0 15px}
+.sidebar.open .label{display:inline}
+.toggle{border:0;background:#302b52;color:white;border-radius:12px;padding:10px}
+.main{margin-left:76px;padding:28px;max-width:1700px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:28px}
+.search{width:min(440px,100%);padding:14px 18px;background:#24213e;border:1px solid #393456;border-radius:14px;color:white;outline:none}
+.user{background:#292448;border:1px solid #514582;color:white;padding:12px 16px;border-radius:14px}
+.hero{min-height:340px;border-radius:28px;background:radial-gradient(circle at 82% 30%,#7950b4 0,transparent 35%),linear-gradient(125deg,#211a43,#38215d 65%,#142e44);padding:40px;display:flex;align-items:center;justify-content:space-between;overflow:hidden;position:relative;border:1px solid #57427b}
+.hero .content{max-width:580px;z-index:1}
+.pill{display:inline-block;padding:8px 13px;border-radius:30px;background:#ff4c91;font-size:12px;font-weight:bold}
+h1{font-size:clamp(30px,4vw,52px);margin:18px 0;line-height:1.1}
+h2{font-size:24px;margin:0 0 18px}
+p{line-height:1.6;color:var(--muted)}
+.hero-art{font-size:clamp(95px,15vw,200px);filter:drop-shadow(0 15px 30px #130c31);transform:rotate(-12deg);white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#7252f2;color:white;border:0;border-radius:12px;padding:13px 18px;font-weight:bold}
+.btn:hover{background:#9178ff}
+.btn.secondary{background:#312b54}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+section{margin-top:36px;scroll-margin-top:20px}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid #34304f;border-radius:20px;overflow:hidden;transition:.25s}
+.card:hover{transform:translateY(-5px);border-color:#8a68ff;box-shadow:0 12px 35px #09051e80}
+.cover{height:170px;display:grid;place-items:center;font-size:72px;position:relative;overflow:hidden}
+.cover:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent,#17142c50)}
+.cardbody{padding:18px}
+.card h3{margin:0 0 8px}
+.card p{margin:0 0 16px;font-size:14px}
+.card .btn{width:100%}
+.purple{background:linear-gradient(135deg,#4724a0,#b45de1)}
+.blue{background:linear-gradient(135deg,#173e8d,#4bb7e8)}
+.pink{background:linear-gradient(135deg,#9e276a,#ff7ab6)}
+.orange{background:linear-gradient(135deg,#a34a1e,#f2ae4f)}
+.green{background:linear-gradient(135deg,#175c50,#57c9a2)}
+.red{background:linear-gradient(135deg,#731d49,#ec5275)}
+.wide{background:var(--panel);border:1px solid #393353;border-radius:22px;padding:24px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.stat{background:#282343;border-radius:16px;padding:20px}
+.stat strong{font-size:28px;color:#b4a0ff}
+.stat span{display:block;color:var(--muted);font-size:13px;margin-top:6px}
+.news{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.newsitem{background:#272342;padding:20px;border-radius:16px}
+.newsitem small{color:#bdaeff}
+.newsitem h3{margin:10px 0}
+.newsitem p{font-size:14px}
+.field{display:block;width:100%;background:#121127;border:1px solid #51466c;color:white;padding:12px;border-radius:10px;margin:10px 0}
+.hidden{display:none!important}
+footer{padding:40px 0;text-align:center;color:var(--muted)}
+.notice{font-size:12px;color:#aaa5c9}
+@media(max-width:950px){.grid{grid-template-columns:repeat(2,1fr)}.hero-art{font-size:100px}}
+@media(max-width:650px){.main{padding:15px;margin-left:64px}.sidebar{width:64px;padding:14px 7px}.hero{padding:25px;min-height:300px}.hero-art{display:none}.grid,.news,.stats{grid-template-columns:1fr}.topbar{flex-wrap:wrap}.search{order:2;width:100%}.card .cover{height:140px}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo">V</div>
+  <button class="toggle" onclick="toggleMenu()" aria-label="Abrir o cerrar menú">☰</button>
+  <a class="navlink active" href="#inicio"><span class="ico">⌂</span><span class="label">Inicio</span></a>
+  <a class="navlink" href="#roblox"><span class="ico">🎮</span><span class="label">Roblox</span></a>
+  <a class="navlink" href="#fivem"><span class="ico">🚘</span><span class="label">FiveM</span></a>
+  <a class="navlink" href="#noticias"><span class="ico">▤</span><span class="label">Noticias</span></a>
+  <a class="navlink" href="#comunidad"><span class="ico">♧</span><span class="label">Comunidad</span></a>
+  <a class="navlink" href="#perfil"><span class="ico">👤</span><span class="label">Mi perfil</span></a>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <input class="search" id="search" placeholder="🔎 Buscar juegos..." oninput="buscarJuegos()">
+    <button class="user" onclick="document.getElementById('perfil').scrollIntoView()">👤 <span id="topname">Invitado</span></button>
+  </header>
+
+  <section id="inicio" style="margin-top:0">
+    <div class="hero">
+      <div class="content">
+        <span class="pill">● VYROX GAMING</span>
+        <h1>Tu universo<br>gaming empieza aquí.</h1>
+        <p>Explora juegos de Roblox, descubre FiveM y mantente conectado con nuestra comunidad.</p>
+        <div class="actions">
+          <a href="#roblox" class="btn">🎮 Explorar juegos</a>
+          <a href="https://discord.gg/S5SpWBbHcr" target="_blank" rel="noopener noreferrer" class="btn secondary">💬 Discord</a>
+        </div>
+      </div>
+      <div class="hero-art">🎮⚡</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectionhead"><h2>📊 Dashboard gaming</h2></div>
+    <div class="stats">
+      <div class="stat"><strong>6</strong><span>Juegos Roblox destacados</span></div>
+      <div class="stat"><strong>1</strong><span>Servidor FiveM destacado</span></div>
+      <div class="stat"><strong id="newsCount">3</strong><span>Noticias disponibles</span></div>
+    </div>
+  </section>
+
+  <section id="roblox">
+    <div class="sectionhead"><h2>🎮 Juegos más populares</h2></div>
+    <div class="grid" id="games">
+      <article class="card game" data-name="brookhaven rp">
+        <div class="cover purple">🏡</div>
+        <div class="cardbody"><h3>Brookhaven RP</h3><p>Vive historias y explora la ciudad.</p><a class="btn" href="https://www.roblox.com/games/4924922222" target="_blank" rel="noopener noreferrer">Jugar ahora ↗</a></div>
+      </article>
+      <article class="card game" data-name="blox fruits">
+        <div class="cover blue">⚔️</div>
+        <div class="cardbody"><h3>Blox Fruits</h3><p>Aventuras, poderes y combates.</p><a class="btn" href="https://www.roblox.com/games/2753915549" target="_blank" rel="noopener noreferrer">Jugar ahora ↗</a></div>
+      </article>
+      <article class="card game" data-name="adopt me">
+        <div class="cover pink">🐶</div>
+        <div class="cardbody"><h3>Adopt Me!</h3><p>Adopta mascotas y conoce amigos.</p><a class="btn" href="https://www.roblox.com/games/920587237" target="_blank" rel="noopener noreferrer">Jugar ahora ↗</a></div>
+      </article>
+      <article class="card game" data-name="dress to impress">
+        <div class="cover orange">👗</div>
+        <div class="cardbody"><h3>Dress to Impress</h3><p>Compite con tus mejores estilos.</p><a class="btn" href="https://www.roblox.com/games/15101393044" target="_blank" rel="noopener noreferrer">Jugar ahora ↗</a></div>
+      </article>
+      <article class="card game" data-name="doors">
+        <div class="cover green">🚪</div>
+        <div class="cardbody"><h3>DOORS</h3><p>Explora habitaciones misteriosas.</p><a class="btn" href="https://www.roblox.com/games/6516141723" target="_blank" rel="noopener noreferrer">Jugar ahora ↗</a></div>
+      </article>
+      <article class="card game" data-name="murder mystery 2">
+        <div class="cover red">🔪</div>
+        <div class="cardbody"><h3>Murder Mystery 2</h3><p>Descubre quién es el asesino.</p><a class="btn" href="https://www.roblox.com/games/142823291" target="_blank" rel="noopener noreferrer">Jugar ahora ↗</a></div>
+      </article>
+    </div>
+    <p id="noresults" class="hidden">No encontramos juegos con ese nombre.</p>
+  </section>
+
+  <section id="fivem">
+    <h2>🚘 Servidor FiveM destacado</h2>
+    <div class="wide">
+      <span class="pill">FiveM · PvP</span>
+      <h2 style="margin-top:18px">Rolas Academy</h2>
+      <p>Servidor destacado de la comunidad FiveM.</p>
+      <p>Comando: <strong>connect rolas.lat</strong></p>
+      <p id="serverStatus">Jugadores: datos no disponibles</p>
+      <div class="actions">
+        <button class="btn" onclick="copiar('connect rolas.lat')">📋 Copiar conexión</button>
+        <a class="btn secondary" href="https://cfx.re/join/o838o7" target="_blank" rel="noopener noreferrer">Entrar al servidor ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="noticias">
+    <h2>📰 Noticias y anuncios</h2>
+    <div class="news" id="newsList"></div>
+  </section>
+
+  <section id="comunidad">
+    <h2>💬 Nuestra comunidad</h2>
+    <div class="wide">
+      <h3>Únete al Discord de VYROX Gaming</h3>
+      <p>Conoce jugadores, comparte novedades y participa en nuestra comunidad.</p>
+      <a class="btn" href="https://discord.gg/S5SpWBbHcr" target="_blank" rel="noopener noreferrer">Entrar a Discord ↗</a>
+    </div>
+  </section>
+
+  <section id="perfil">
+    <h2>👤 Mi perfil</h2>
+    <div class="wide">
+      <p>Personaliza tu perfil de demostración.</p>
+      <label>Nombre de usuario</label>
+      <input class="field" id="username" maxlength="30" placeholder="Tu nombre">
+      <label>Juego favorito</label>
+      <select class="field" id="favorite">
+        <option>Roblox</option>
+        <option>FiveM</option>
+        <option>Brookhaven RP</option>
+        <option>Blox Fruits</option>
+        <option>DOORS</option>
+      </select>
+      <label>Biografía</label>
+      <textarea class="field" id="bio" maxlength="200" rows="3" placeholder="Cuéntanos sobre ti"></textarea>
+      <button class="btn" onclick="guardarPerfil()">💾 Guardar perfil</button>
+      <p class="notice">Perfil de demostración: se guarda solo en este navegador. No es una cuenta real.</p>
+    </div>
+  </section>
+
+  <footer>© 2026 VYROX Gaming · Hecho para gamers 💜</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+
+function toggleMenu(){
+  $("sidebar").classList.toggle("open");
+}
+
+function buscarJuegos(){
+  const q=$("search").value.toLowerCase().trim();
+  let encontrados=0;
+  document.querySelectorAll(".game").forEach(card=>{
+    const visible=card.dataset.name.includes(q);
+    card.classList.toggle("hidden",!visible);
+    if(visible) encontrados++;
+  });
+  $("noresults").classList.toggle("hidden",encontrados>0);
+}
+
+async function copiar(texto){
+  try{
+    await navigator.clipboard.writeText(texto);
+    alert("¡Comando copiado!");
+  }catch{
+    prompt("Copia este comando:",texto);
+  }
+}
+
+function guardarPerfil(){
+  const perfil={
+    nombre:$("username").value.trim().slice(0,30)||"Invitado",
+    juego:$("favorite").value,
+    bio:$("bio").value.trim().slice(0,200)
+  };
+  localStorage.setItem("vyroxPerfilDemo",JSON.stringify(perfil));
+  $("topname").textContent=perfil.nombre;
+  alert("¡Perfil guardado en este navegador!");
+}
+
+function cargarPerfil(){
+  try{
+    const p=JSON.parse(localStorage.getItem("vyroxPerfilDemo")||"null");
+    if(!p)return;
+    $("username").value=p.nombre||"";
+    $("topname").textContent=p.nombre||"Invitado";
+    $("bio").value=p.bio||"";
+    if([...$("favorite").options].some(o=>o.value===p.juego)){
+      $("favorite").value=p.juego;
+    }
+  }catch(e){}
+}
+
+const noticiasIniciales=[
+  {titulo:"¡Bienvenido a VYROX Gaming!",categoria:"Anuncios",texto:"Nuestro espacio gaming está creciendo. ¡Gracias por formar parte!"},
+  {titulo:"Rolas Academy en FiveM",categoria:"FiveM",texto:"Descubre el servidor PvP destacado y utiliza su enlace de conexión."},
+  {titulo:"Explora juegos de Roblox",categoria:"Roblox",texto:"Encuentra juegos populares y entra directamente desde VYROX Gaming."}
+];
+
+function cargarNoticias(){
+  let noticias=noticiasIniciales;
+  try{
+    const guardadas=JSON.parse(localStorage.getItem("vyroxNoticias")||"null");
+    if(Array.isArray(guardadas)) noticias=guardadas;
+  }catch(e){}
+  $("newsList").replaceChildren();
+  noticias.forEach(n=>{
+    const articulo=document.createElement("article");
+    articulo.className="newsitem";
+    const cat=document.createElement("small");
+    cat.textContent=n.categoria||"Anuncio";
+    const titulo=document.createElement("h3");
+    titulo.textContent=n.titulo||"Noticia";
+    const texto=document.createElement("p");
+    texto.textContent=n.texto||n.contenido||"";
+    articulo.append(cat,titulo,texto);
+    $("newsList").append(articulo);
+  });
+  $("newsCount").textContent=noticias.length;
+}
+
+document.querySelectorAll(".navlink").forEach(link=>{
+  link.addEventListener("click",()=>{
+    document.querySelectorAll(".navlink").forEach(a=>a.classList.remove("active"));
+    link.classList.add("active");
+    if(innerWidth<650)$("sidebar").classList.remove("open");
+  });
+});
+
+cargarPerfil();
+cargarNoticias();
+</script>
+</body>
+</html>
