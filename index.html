@@ -102,6 +102,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .empty{padding:20px;color:var(--muted)}
 footer{text-align:center;color:#8e82ac;padding:38px 0 12px;font-size:13px}
 .hidden{display:none!important}
+.authbox{max-width:620px;margin:auto}.authgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.authgrid .btn{width:100%}.authstatus{margin:12px 0;color:#cbbaff;font-size:14px;line-height:1.5}.authstatus.error{color:#ff9eaf}.authstatus.ok{color:#62e6bb}.accountbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}.accountemail{color:#cbbaff;font-size:13px;overflow-wrap:anywhere}
+@media(max-width:720px){.authgrid{grid-template-columns:1fr}}
 @keyframes float{50%{transform:translateY(-12px)}}
 @media(max-width:1040px){
 .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -281,31 +283,38 @@ footer{text-align:center;color:#8e82ac;padding:38px 0 12px;font-size:13px}
 </section>
 
 <section class="section" id="perfil">
-<div class="heading"><h2>👤 Mi perfil</h2><span>Demostración local</span></div>
+<div class="heading"><h2>👤 Mi cuenta y perfil</h2><span>Firebase Authentication + Firestore</span></div>
 <div class="wide">
-<p>Personaliza tu espacio. Los cambios se guardan únicamente en este navegador.</p>
+<div id="authLoading" class="authstatus">🔄 Comprobando sesión...</div>
+<div id="authGuest" class="authbox hidden">
+<h3>🔐 Entra a VYROX Gaming</h3>
+<p>Regístrate con tu correo o inicia sesión para guardar tu perfil en tu cuenta.</p>
+<form id="authForm">
+<label class="fieldlabel" for="authEmail">Correo electrónico</label>
+<input class="field" id="authEmail" type="email" autocomplete="email" maxlength="254" required placeholder="tu@correo.com">
+<label class="fieldlabel" for="authPassword" style="margin-top:14px">Contraseña</label>
+<input class="field" id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Mínimo 6 caracteres">
+<div class="authgrid" style="margin-top:16px">
+<button class="btn" type="submit" id="loginBtn">Iniciar sesión</button>
+<button class="btn alt" type="button" id="registerBtn">Crear cuenta</button>
+</div>
+</form>
+<button type="button" id="resetPassword" style="background:none;border:0;color:#c9b5ff;padding:14px 0;text-decoration:underline">¿Olvidaste tu contraseña?</button>
+<p class="hint">No compartas tu contraseña con nadie. Usa una contraseña única.</p>
+</div>
+<div id="authMember" class="hidden">
+<div class="accountbar"><div><strong>✅ Sesión iniciada</strong><div id="accountEmail" class="accountemail"></div></div><button class="btn alt" id="logoutBtn" type="button">🚪 Cerrar sesión</button></div>
+<p>Tu perfil se guarda en Firestore y estará disponible cuando vuelvas a iniciar sesión.</p>
+<form id="profileForm">
 <div class="fields">
-<div>
-<label class="fieldlabel" for="username">Nombre de usuario</label>
-<input class="field" id="username" maxlength="30" placeholder="Tu nombre">
+<div><label class="fieldlabel" for="username">Nombre de usuario</label><input class="field" id="username" maxlength="30" required placeholder="Tu nombre"></div>
+<div><label class="fieldlabel" for="favorite">Juego favorito</label><select class="field" id="favorite"><option>Roblox</option><option>FiveM</option><option>Brookhaven RP</option><option>Blox Fruits</option><option>DOORS</option></select></div>
+<div class="biofield"><label class="fieldlabel" for="bio">Biografía</label><textarea class="field" id="bio" rows="3" maxlength="200" placeholder="Cuéntanos sobre ti..."></textarea></div>
 </div>
-<div>
-<label class="fieldlabel" for="favorite">Juego favorito</label>
-<select class="field" id="favorite">
-<option>Roblox</option>
-<option>FiveM</option>
-<option>Brookhaven RP</option>
-<option>Blox Fruits</option>
-<option>DOORS</option>
-</select>
+<button class="btn" id="saveProfile" type="submit" style="margin-top:16px">💾 Guardar perfil</button>
+</form>
 </div>
-<div class="biofield">
-<label class="fieldlabel" for="bio">Biografía</label>
-<textarea class="field" id="bio" rows="3" maxlength="200" placeholder="Cuéntanos sobre ti..."></textarea>
-</div>
-</div>
-<button class="btn" id="saveProfile">💾 Guardar perfil</button>
-<p class="hint">No es un registro real. Para cuentas compartidas y administración segura necesitaremos un sistema de autenticación.</p>
+<div id="accountStatus" class="authstatus" role="status" aria-live="polite"></div>
 </div>
 </section>
 
@@ -351,34 +360,6 @@ $('copyConnect').addEventListener('click',async()=>{
  }
 });
 
-function loadProfile(){
- try{
-  const p=JSON.parse(localStorage.getItem('vyroxPerfilDemo')||'null');
-  if(!p)return;
-  $('username').value=p.nombre||'';
-  $('topname').textContent=p.nombre||'Invitado';
-  $('bio').value=p.bio||'';
-  if([...$('favorite').options].some(o=>o.value===p.juego)){
-   $('favorite').value=p.juego;
-  }
- }catch(e){}
-}
-
-$('saveProfile').addEventListener('click',()=>{
- const p={
-  nombre:$('username').value.trim().slice(0,30)||'Invitado',
-  juego:$('favorite').value,
-  bio:$('bio').value.trim().slice(0,200)
- };
- try{
-  localStorage.setItem('vyroxPerfilDemo',JSON.stringify(p));
-  $('topname').textContent=p.nombre;
-  alert('¡Perfil guardado en este navegador!');
- }catch(e){
-  alert('El navegador no permitió guardar los datos.');
- }
-});
-
 const defaults=[
  {
   titulo:'¡Bienvenido a VYROX Gaming!',
@@ -419,8 +400,90 @@ function loadNews(){
  $('newsCount').textContent=String(news.length).padStart(2,'0');
 }
 
-loadProfile();
 loadNews();
+</script>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
+import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
+
+const firebaseConfig={
+ apiKey:'AIzaSyBGWV7eHkeszklcaL_nu3xIY7kHx-HydsA',
+ authDomain:'vyrox-gaming-af92a.firebaseapp.com',
+ projectId:'vyrox-gaming-af92a',
+ storageBucket:'vyrox-gaming-af92a.firebasestorage.app',
+ messagingSenderId:'114992325203',
+ appId:'1:114992325203:web:f3f9b7aa435a2a646d9ca6'
+};
+const $=id=>document.getElementById(id);
+const setStatus=(message,error=false)=>{const e=$('accountStatus');e.textContent=message;e.className='authstatus '+(error?'error':'ok')};
+const messageFor=e=>({
+ 'auth/email-already-in-use':'Este correo ya está registrado. Inicia sesión.',
+ 'auth/invalid-email':'El correo electrónico no es válido.',
+ 'auth/weak-password':'Utiliza una contraseña más segura.',
+ 'auth/invalid-credential':'Correo o contraseña incorrectos.',
+ 'auth/too-many-requests':'Demasiados intentos. Prueba más tarde.',
+ 'auth/network-request-failed':'Revisa tu conexión a internet.',
+ 'permission-denied':'No hay permiso para guardar el perfil. Revisa las reglas de Firestore.'
+}[e.code]||'No se pudo completar la operación. '+(e.code||''));
+try{
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+let currentUser=null;
+function busy(v){$('loginBtn').disabled=v;$('registerBtn').disabled=v;$('saveProfile').disabled=v;}
+async function register(){
+ const email=$('authEmail').value.trim(),password=$('authPassword').value;
+ if(!$('authForm').reportValidity())return;
+ busy(true);setStatus('Creando cuenta...');
+ try{await createUserWithEmailAndPassword(auth,email,password);$('authPassword').value='';setStatus('¡Cuenta creada! Ya puedes completar tu perfil.');}
+ catch(e){setStatus(messageFor(e),true)}finally{busy(false)}
+}
+$('registerBtn').addEventListener('click',register);
+$('authForm').addEventListener('submit',async e=>{
+ e.preventDefault();busy(true);setStatus('Iniciando sesión...');
+ try{await signInWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authPassword').value='';setStatus('¡Bienvenido a VYROX Gaming!')}
+ catch(err){setStatus(messageFor(err),true)}finally{busy(false)}
+});
+$('logoutBtn').addEventListener('click',async()=>{
+ try{await signOut(auth);setStatus('Sesión cerrada.')}catch(e){setStatus(messageFor(e),true)}
+});
+$('resetPassword').addEventListener('click',async()=>{
+ const email=$('authEmail').value.trim();
+ if(!email){setStatus('Escribe tu correo primero.',true);return}
+ try{await sendPasswordResetEmail(auth,email);setStatus('Si existe una cuenta con ese correo, recibirás instrucciones para restablecer la contraseña.')}
+ catch(e){setStatus(messageFor(e),true)}
+});
+$('profileForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!currentUser){setStatus('Inicia sesión primero.',true);return}
+ const nombre=$('username').value.trim().slice(0,30);
+ if(!nombre){setStatus('Escribe un nombre de usuario.',true);return}
+ busy(true);setStatus('Guardando perfil...');
+ try{
+  await setDoc(doc(db,'usuarios',currentUser.uid),{nombre,juego:$('favorite').value,bio:$('bio').value.trim().slice(0,200),actualizado:serverTimestamp()},{merge:true});
+  await updateProfile(currentUser,{displayName:nombre});
+  $('topname').textContent=nombre;setStatus('¡Perfil guardado en tu cuenta!');
+ }catch(err){setStatus(messageFor(err),true)}finally{busy(false)}
+});
+onAuthStateChanged(auth,async user=>{
+ currentUser=user;$('authLoading').classList.add('hidden');
+ $('authGuest').classList.toggle('hidden',!!user);
+ $('authMember').classList.toggle('hidden',!user);
+ $('topname').textContent=user?.displayName||user?.email?.split('@')[0]||'Invitado';
+ $('accountEmail').textContent=user?.email||'';
+ $('username').value='';$('bio').value='';$('favorite').value='Roblox';
+ if(!user)return;
+ try{
+  const snap=await getDoc(doc(db,'usuarios',user.uid));
+  if(auth.currentUser?.uid!==user.uid)return;
+  if(snap.exists()){
+   const p=snap.data();$('username').value=p.nombre||'';$('bio').value=p.bio||'';
+   if([...$('favorite').options].some(o=>o.value===p.juego))$('favorite').value=p.juego;
+   $('topname').textContent=p.nombre||$('topname').textContent;
+  }
+ }catch(e){setStatus('No se pudo cargar el perfil: '+messageFor(e),true)}
+},e=>{$('authLoading').textContent='Error de autenticación: '+messageFor(e)});
+}catch(e){$('authLoading').textContent='No se pudo conectar con Firebase. Revisa la conexión a internet.';console.error(e)}
 </script>
 </body>
 </html>
