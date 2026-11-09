@@ -102,7 +102,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .empty{padding:20px;color:var(--muted)}
 footer{text-align:center;color:#8e82ac;padding:38px 0 12px;font-size:13px}
 .hidden{display:none!important}
-.authbox{max-width:620px;margin:auto}.authgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.authgrid .btn{width:100%}.authstatus{margin:12px 0;color:#cbbaff;font-size:14px;line-height:1.5}.authstatus.error{color:#ff9eaf}.authstatus.ok{color:#62e6bb}.accountbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}.accountemail{color:#cbbaff;font-size:13px;overflow-wrap:anywhere}
+.adminpanel{border:1px solid #7955c9;background:linear-gradient(135deg,#2b204b,#1b1731);border-radius:20px;padding:24px}.adminpanel textarea{min-height:110px}.adminnews{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #554375;border-radius:12px;margin-top:10px}.adminnews button{background:#642b52;color:#fff;border:1px solid #aa547a;border-radius:9px;padding:9px 12px}.authbox{max-width:620px;margin:auto}.authgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.authgrid .btn{width:100%}.authstatus{margin:12px 0;color:#cbbaff;font-size:14px;line-height:1.5}.authstatus.error{color:#ff9eaf}.authstatus.ok{color:#62e6bb}.accountbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}.accountemail{color:#cbbaff;font-size:13px;overflow-wrap:anywhere}
 @media(max-width:720px){.authgrid{grid-template-columns:1fr}}
 @keyframes float{50%{transform:translateY(-12px)}}
 @media(max-width:1040px){
@@ -145,6 +145,7 @@ footer{text-align:center;color:#8e82ac;padding:38px 0 12px;font-size:13px}
 <a class="nav" href="#noticias"><span class="ico">▤</span><span>Noticias</span></a>
 <a class="nav" href="#comunidad"><span class="ico">♧</span><span>Comunidad</span></a>
 <a class="nav" href="#perfil"><span class="ico">👤</span><span>Mi perfil</span></a>
+<a class="nav hidden" id="adminNav" href="#administracion"><span class="ico">🛡️</span><span>Administración</span></a>
 <div class="sidebottom">VYROX © 2026</div>
 </aside>
 
@@ -172,6 +173,7 @@ footer{text-align:center;color:#8e82ac;padding:38px 0 12px;font-size:13px}
 </div>
 </div>
 <div class="hero-art" aria-hidden="true">
+
 <div class="orb"></div>
 <span class="pad">🎮</span>
 <span class="spark">⚡</span>
@@ -318,172 +320,516 @@ footer{text-align:center;color:#8e82ac;padding:38px 0 12px;font-size:13px}
 </div>
 </section>
 
+<section class="section hidden" id="administracion">
+<div class="heading"><h2>🛡️ Panel de administrador</h2><span>Solo administradores autorizados</span></div>
+<div class="adminpanel">
+<h3>📰 Publicar noticia</h3>
+<form id="adminNewsForm">
+<label class="fieldlabel" for="adminTitle">Título</label><input class="field" id="adminTitle" required maxlength="100" placeholder="Título de la noticia">
+<label class="fieldlabel" for="adminCategory" style="margin-top:14px">Categoría</label><select class="field" id="adminCategory"><option>Anuncios</option><option>Roblox</option><option>FiveM</option><option>Comunidad</option></select>
+<label class="fieldlabel" for="adminText" style="margin-top:14px">Contenido</label><textarea class="field" id="adminText" required maxlength="2000" placeholder="Escribe tu noticia..."></textarea>
+<button class="btn" type="submit" id="publishNews" style="margin-top:14px">📢 Publicar noticia</button>
+</form>
+<p class="authstatus" id="adminStatus" role="status" aria-live="polite"></p>
+<h3>Noticias publicadas</h3><div id="adminNewsList"></div>
+</div></section>
+
 <footer>© 2026 VYROX Gaming · Diseñado para la comunidad gaming 💜</footer>
 </main>
 
 <script>
+
 'use strict';
-const $=id=>document.getElementById(id);
 
-$('menuToggle').addEventListener('click',()=>{
- const expanded=$('sidebar').classList.toggle('open');
- $('menuToggle').setAttribute('aria-expanded',String(expanded));
+const $ = id => document.getElementById(id);
+
+// MENÚ LATERAL
+$('menuToggle').addEventListener('click', () => {
+  const expanded = $('sidebar').classList.toggle('open');
+  $('menuToggle').setAttribute('aria-expanded', String(expanded));
 });
 
-document.querySelectorAll('.nav').forEach(a=>a.addEventListener('click',()=>{
- document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
- a.classList.add('active');
- if(innerWidth<=720){
-  $('sidebar').classList.remove('open');
-  $('menuToggle').setAttribute('aria-expanded','false');
- }
-}));
+document.querySelectorAll('.nav').forEach(a => {
+  a.addEventListener('click', () => {
+    document.querySelectorAll('.nav').forEach(n => {
+      n.classList.remove('active');
+    });
+    a.classList.add('active');
 
-$('search').addEventListener('input',()=>{
- const q=$('search').value.toLowerCase().trim();
- let found=0;
- document.querySelectorAll('.game').forEach(c=>{
-  const show=c.dataset.name.includes(q);
-  c.classList.toggle('hidden',!show);
-  if(show)found++;
- });
- $('noresults').classList.toggle('hidden',found>0);
+    if (innerWidth <= 720) {
+      $('sidebar').classList.remove('open');
+      $('menuToggle').setAttribute('aria-expanded', 'false');
+    }
+  });
 });
 
-$('copyConnect').addEventListener('click',async()=>{
- try{
-  await navigator.clipboard.writeText('connect rolas.lat');
-  $('copyConnect').textContent='✓ ¡Copiado!';
-  setTimeout(()=>$('copyConnect').textContent='📋 Copiar conexión',1800);
- }catch(e){
-  prompt('Copia este comando:','connect rolas.lat');
- }
+// BUSCADOR DE JUEGOS
+$('search').addEventListener('input', () => {
+  const q = $('search').value.toLowerCase().trim();
+  let found = 0;
+
+  document.querySelectorAll('.game').forEach(card => {
+    const show = card.dataset.name.includes(q);
+    card.classList.toggle('hidden', !show);
+    if (show) found++;
+  });
+
+  $('noresults').classList.toggle('hidden', found > 0);
 });
 
-const defaults=[
- {
-  titulo:'¡Bienvenido a VYROX Gaming!',
-  categoria:'Anuncios',
-  texto:'Nuestra comunidad gaming sigue creciendo. Explora las secciones y descubre todo lo que puedes hacer.'
- },
- {
-  titulo:'Rolas Academy en FiveM',
-  categoria:'FiveM',
-  texto:'Conoce el servidor PvP destacado y utiliza el enlace de conexión para entrar.'
- },
- {
-  titulo:'Juegos destacados de Roblox',
-  categoria:'Roblox',
-  texto:'Encuentra tus experiencias favoritas de Roblox desde nuestra biblioteca gaming.'
- }
+// COPIAR CONEXIÓN DE FIVEM
+$('copyConnect').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText('connect rolas.lat');
+    $('copyConnect').textContent = '✓ ¡Copiado!';
+    setTimeout(() => {
+      $('copyConnect').textContent = '📋 Copiar conexión';
+    }, 1800);
+  } catch (e) {
+    prompt('Copia este comando:', 'connect rolas.lat');
+  }
+});
+
+// NOTICIAS INICIALES
+const defaults = [
+  {
+    titulo: '¡Bienvenido a VYROX Gaming!',
+    categoria: 'Anuncios',
+    texto: 'Nuestra comunidad gaming sigue creciendo. Explora las secciones y descubre todo lo que puedes hacer.'
+  },
+  {
+    titulo: 'Rolas Academy en FiveM',
+    categoria: 'FiveM',
+    texto: 'Conoce el servidor PvP destacado y utiliza el enlace de conexión para entrar.'
+  },
+  {
+    titulo: 'Juegos destacados de Roblox',
+    categoria: 'Roblox',
+    texto: 'Encuentra tus experiencias favoritas de Roblox desde nuestra biblioteca gaming.'
+  }
 ];
 
-function loadNews(){
- let news=defaults;
- try{
-  const stored=JSON.parse(localStorage.getItem('vyroxNoticias')||'null');
-  if(Array.isArray(stored))news=stored;
- }catch(e){}
- $('newsList').replaceChildren();
- news.forEach(n=>{
-  const item=document.createElement('article');
-  item.className='newsitem';
-  const cat=document.createElement('small');
-  cat.textContent=String(n.categoria||'Anuncio');
-  const h=document.createElement('h3');
-  h.textContent=String(n.titulo||'Noticia');
-  const p=document.createElement('p');
-  p.textContent=String(n.texto||n.contenido||'');
-  item.append(cat,h,p);
-  $('newsList').append(item);
- });
- $('newsCount').textContent=String(news.length).padStart(2,'0');
+function renderNews(news) {
+  $('newsList').replaceChildren();
+
+  news.forEach(n => {
+    const item = document.createElement('article');
+    item.className = 'newsitem';
+
+    const cat = document.createElement('small');
+    cat.textContent = String(n.categoria || 'Anuncios');
+
+    const title = document.createElement('h3');
+    title.textContent = String(n.titulo || 'Noticia');
+
+    const body = document.createElement('p');
+    body.textContent = String(n.texto || '');
+
+    item.append(cat, title, body);
+    $('newsList').append(item);
+  });
+
+  $('newsCount').textContent =
+    String(news.length).padStart(2, '0');
 }
 
-loadNews();
+renderNews(defaults);
 </script>
-<script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
-import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updateProfile} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 
-const firebaseConfig={
- apiKey:'AIzaSyBGWV7eHkeszklcaL_nu3xIY7kHx-HydsA',
- authDomain:'vyrox-gaming-af92a.firebaseapp.com',
- projectId:'vyrox-gaming-af92a',
- storageBucket:'vyrox-gaming-af92a.firebasestorage.app',
- messagingSenderId:'114992325203',
- appId:'1:114992325203:web:f3f9b7aa435a2a646d9ca6'
+<script type="module">
+import { initializeApp } from
+'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  updateProfile
+} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  addDoc,
+  deleteDoc,
+  onSnapshot,
+  serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
+
+// CONFIGURACIÓN DE VYROX GAMING
+const firebaseConfig = {
+  apiKey: 'AIzaSyBGWV7eHkeszklcaL_nu3xIY7kHx-HydsA',
+  authDomain: 'vyrox-gaming-af92a.firebaseapp.com',
+  projectId: 'vyrox-gaming-af92a',
+  storageBucket: 'vyrox-gaming-af92a.firebasestorage.app',
+  messagingSenderId: '114992325203',
+  appId: '1:114992325203:web:f3f9b7aa435a2a646d9ca6'
 };
-const $=id=>document.getElementById(id);
-const setStatus=(message,error=false)=>{const e=$('accountStatus');e.textContent=message;e.className='authstatus '+(error?'error':'ok')};
-const messageFor=e=>({
- 'auth/email-already-in-use':'Este correo ya está registrado. Inicia sesión.',
- 'auth/invalid-email':'El correo electrónico no es válido.',
- 'auth/weak-password':'Utiliza una contraseña más segura.',
- 'auth/invalid-credential':'Correo o contraseña incorrectos.',
- 'auth/too-many-requests':'Demasiados intentos. Prueba más tarde.',
- 'auth/network-request-failed':'Revisa tu conexión a internet.',
- 'permission-denied':'No hay permiso para guardar el perfil. Revisa las reglas de Firestore.'
-}[e.code]||'No se pudo completar la operación. '+(e.code||''));
-try{
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-let currentUser=null;
-function busy(v){$('loginBtn').disabled=v;$('registerBtn').disabled=v;$('saveProfile').disabled=v;}
-async function register(){
- const email=$('authEmail').value.trim(),password=$('authPassword').value;
- if(!$('authForm').reportValidity())return;
- busy(true);setStatus('Creando cuenta...');
- try{await createUserWithEmailAndPassword(auth,email,password);$('authPassword').value='';setStatus('¡Cuenta creada! Ya puedes completar tu perfil.');}
- catch(e){setStatus(messageFor(e),true)}finally{busy(false)}
+
+const $ = id => document.getElementById(id);
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let isAdmin = false;
+let currentNews = [];
+let unsubscribeNews = null;
+
+function status(message, error = false) {
+  const element = $('accountStatus');
+  element.textContent = message;
+  element.className = 'authstatus ' + (error ? 'error' : 'ok');
 }
-$('registerBtn').addEventListener('click',register);
-$('authForm').addEventListener('submit',async e=>{
- e.preventDefault();busy(true);setStatus('Iniciando sesión...');
- try{await signInWithEmailAndPassword(auth,$('authEmail').value.trim(),$('authPassword').value);$('authPassword').value='';setStatus('¡Bienvenido a VYROX Gaming!')}
- catch(err){setStatus(messageFor(err),true)}finally{busy(false)}
-});
-$('logoutBtn').addEventListener('click',async()=>{
- try{await signOut(auth);setStatus('Sesión cerrada.')}catch(e){setStatus(messageFor(e),true)}
-});
-$('resetPassword').addEventListener('click',async()=>{
- const email=$('authEmail').value.trim();
- if(!email){setStatus('Escribe tu correo primero.',true);return}
- try{await sendPasswordResetEmail(auth,email);setStatus('Si existe una cuenta con ese correo, recibirás instrucciones para restablecer la contraseña.')}
- catch(e){setStatus(messageFor(e),true)}
-});
-$('profileForm').addEventListener('submit',async e=>{
- e.preventDefault();if(!currentUser){setStatus('Inicia sesión primero.',true);return}
- const nombre=$('username').value.trim().slice(0,30);
- if(!nombre){setStatus('Escribe un nombre de usuario.',true);return}
- busy(true);setStatus('Guardando perfil...');
- try{
-  await setDoc(doc(db,'usuarios',currentUser.uid),{nombre,juego:$('favorite').value,bio:$('bio').value.trim().slice(0,200),actualizado:serverTimestamp()},{merge:true});
-  await updateProfile(currentUser,{displayName:nombre});
-  $('topname').textContent=nombre;setStatus('¡Perfil guardado en tu cuenta!');
- }catch(err){setStatus(messageFor(err),true)}finally{busy(false)}
-});
-onAuthStateChanged(auth,async user=>{
- currentUser=user;$('authLoading').classList.add('hidden');
- $('authGuest').classList.toggle('hidden',!!user);
- $('authMember').classList.toggle('hidden',!user);
- $('topname').textContent=user?.displayName||user?.email?.split('@')[0]||'Invitado';
- $('accountEmail').textContent=user?.email||'';
- $('username').value='';$('bio').value='';$('favorite').value='Roblox';
- if(!user)return;
- try{
-  const snap=await getDoc(doc(db,'usuarios',user.uid));
-  if(auth.currentUser?.uid!==user.uid)return;
-  if(snap.exists()){
-   const p=snap.data();$('username').value=p.nombre||'';$('bio').value=p.bio||'';
-   if([...$('favorite').options].some(o=>o.value===p.juego))$('favorite').value=p.juego;
-   $('topname').textContent=p.nombre||$('topname').textContent;
+
+function adminStatus(message, error = false) {
+  const element = $('adminStatus');
+  element.textContent = message;
+  element.className = 'authstatus ' + (error ? 'error' : 'ok');
+}
+
+function errorMessage(error) {
+  const messages = {
+    'auth/email-already-in-use': 'Este correo ya está registrado.',
+    'auth/invalid-email': 'El correo no es válido.',
+    'auth/weak-password': 'Utiliza una contraseña más segura.',
+    'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+    'auth/too-many-requests': 'Demasiados intentos. Prueba más tarde.',
+    'auth/network-request-failed': 'Revisa tu conexión.',
+    'permission-denied': 'No tienes permiso para realizar esta acción.'
+  };
+
+  return messages[error.code] ||
+    'Ocurrió un error: ' + (error.code || 'desconocido');
+}
+
+function busy(value) {
+  $('loginBtn').disabled = value;
+  $('registerBtn').disabled = value;
+  $('saveProfile').disabled = value;
+}
+
+// REGISTRAR CUENTA
+$('registerBtn').addEventListener('click', async () => {
+  if (!$('authForm').reportValidity()) return;
+
+  busy(true);
+  status('Creando cuenta...');
+
+  try {
+    await createUserWithEmailAndPassword(
+      auth,
+      $('authEmail').value.trim(),
+      $('authPassword').value
+    );
+
+    $('authPassword').value = '';
+    status('¡Cuenta creada correctamente!');
+  } catch (error) {
+    status(errorMessage(error), true);
+  } finally {
+    busy(false);
   }
- }catch(e){setStatus('No se pudo cargar el perfil: '+messageFor(e),true)}
-},e=>{$('authLoading').textContent='Error de autenticación: '+messageFor(e)});
-}catch(e){$('authLoading').textContent='No se pudo conectar con Firebase. Revisa la conexión a internet.';console.error(e)}
+});
+
+// INICIAR SESIÓN
+$('authForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  busy(true);
+  status('Iniciando sesión...');
+
+  try {
+    await signInWithEmailAndPassword(
+      auth,
+      $('authEmail').value.trim(),
+      $('authPassword').value
+    );
+
+    $('authPassword').value = '';
+    status('¡Bienvenido a VYROX Gaming!');
+  } catch (error) {
+    status(errorMessage(error), true);
+  } finally {
+    busy(false);
+  }
+});
+
+// CERRAR SESIÓN
+$('logoutBtn').addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+    status('Sesión cerrada.');
+  } catch (error) {
+    status(errorMessage(error), true);
+  }
+});
+
+// RECUPERAR CONTRASEÑA
+$('resetPassword').addEventListener('click', async () => {
+  const email = $('authEmail').value.trim();
+
+  if (!email) {
+    status('Escribe tu correo electrónico primero.', true);
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    status('Si existe esa cuenta, recibirás un correo de recuperación.');
+  } catch (error) {
+    status(errorMessage(error), true);
+  }
+});
+
+// GUARDAR PERFIL
+$('profileForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  if (!currentUser) {
+    status('Inicia sesión primero.', true);
+    return;
+  }
+
+  const nombre = $('username').value.trim().slice(0, 30);
+
+  if (!nombre) {
+    status('Escribe tu nombre de usuario.', true);
+    return;
+  }
+
+  busy(true);
+  status('Guardando perfil...');
+
+  try {
+    await setDoc(
+      doc(db, 'usuarios', currentUser.uid),
+      {
+        nombre,
+        juego: $('favorite').value,
+        bio: $('bio').value.trim().slice(0, 200),
+        actualizado: serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    await updateProfile(currentUser, { displayName: nombre });
+    $('topname').textContent = nombre;
+    status('¡Perfil guardado correctamente!');
+  } catch (error) {
+    status(errorMessage(error), true);
+  } finally {
+    busy(false);
+  }
+});
+
+// COMPROBAR SI EL USUARIO ES ADMINISTRADOR
+async function checkAdmin(user) {
+  isAdmin = false;
+
+  $('adminNav').classList.add('hidden');
+  $('administracion').classList.add('hidden');
+
+  if (!user) return;
+
+  try {
+    const snapshot = await getDoc(
+      doc(db, 'administradores', user.uid)
+    );
+
+    if (auth.currentUser?.uid !== user.uid) return;
+
+    isAdmin = snapshot.exists() &&
+      snapshot.data().activo === true;
+
+    $('adminNav').classList.toggle('hidden', !isAdmin);
+    $('administracion').classList.toggle('hidden', !isAdmin);
+  } catch (error) {
+    console.error('No se pudo comprobar el administrador:', error);
+  }
+}
+
+// MOSTRAR NOTICIAS PUBLICADAS EN FIRESTORE
+function startNews() {
+  if (unsubscribeNews) unsubscribeNews();
+
+  unsubscribeNews = onSnapshot(
+    collection(db, 'noticias'),
+    snapshot => {
+      currentNews = snapshot.docs.map(documento => ({
+        id: documento.id,
+        ...documento.data()
+      }));
+
+      currentNews.sort((a, b) => {
+        const timeA = a.creado?.seconds || 0;
+        const timeB = b.creado?.seconds || 0;
+        return timeB - timeA;
+      });
+
+      renderNews([...currentNews, ...defaults]);
+      renderAdminNews();
+    },
+    error => {
+      console.error('Error cargando noticias:', error);
+      renderNews(defaults);
+      adminStatus('No se pudieron cargar las noticias.', true);
+    }
+  );
+}
+
+// MOSTRAR NOTICIAS EN EL PANEL DE ADMINISTRADOR
+function renderAdminNews() {
+  $('adminNewsList').replaceChildren();
+
+  if (!isAdmin) return;
+
+  if (!currentNews.length) {
+    $('adminNewsList').textContent =
+      'Todavía no hay noticias publicadas.';
+    return;
+  }
+
+  currentNews.forEach(news => {
+    const row = document.createElement('div');
+    row.className = 'adminnews';
+
+    const title = document.createElement('strong');
+    title.textContent = news.titulo || 'Sin título';
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = '🗑️ Eliminar';
+
+    remove.addEventListener('click', async () => {
+      if (!isAdmin || !currentUser) return;
+
+      if (!confirm('¿Eliminar esta noticia?')) return;
+
+      remove.disabled = true;
+
+      try {
+        await deleteDoc(doc(db, 'noticias', news.id));
+        adminStatus('Noticia eliminada correctamente.');
+      } catch (error) {
+        adminStatus(errorMessage(error), true);
+        remove.disabled = false;
+      }
+    });
+
+    row.append(title, remove);
+    $('adminNewsList').append(row);
+  });
+}
+
+// PUBLICAR NOTICIAS
+$('adminNewsForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  if (!isAdmin || !currentUser) {
+    adminStatus('No tienes permisos de administrador.', true);
+    return;
+  }
+
+  const titulo = $('adminTitle').value.trim();
+  const categoria = $('adminCategory').value;
+  const texto = $('adminText').value.trim();
+
+  if (!titulo || !texto) {
+    adminStatus('Completa todos los campos.', true);
+    return;
+  }
+
+  $('publishNews').disabled = true;
+  adminStatus('Publicando noticia...');
+
+  try {
+    await addDoc(collection(db, 'noticias'), {
+      titulo,
+      categoria,
+      texto,
+      creado: serverTimestamp(),
+      autor: currentUser.uid
+    });
+
+    $('adminNewsForm').reset();
+    adminStatus('¡Noticia publicada para todos!');
+  } catch (error) {
+    adminStatus(errorMessage(error), true);
+  } finally {
+    $('publishNews').disabled = false;
+  }
+});
+
+// DETECTAR SESIONES
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
+  isAdmin = false;
+
+  $('authLoading').classList.add('hidden');
+  $('authGuest').classList.toggle('hidden', !!user);
+  $('authMember').classList.toggle('hidden', !user);
+
+  $('adminNav').classList.add('hidden');
+  $('administracion').classList.add('hidden');
+
+  $('topname').textContent =
+    user?.displayName ||
+    user?.email?.split('@')[0] ||
+    'Invitado';
+
+  $('accountEmail').textContent = user?.email || '';
+
+  $('username').value = '';
+  $('bio').value = '';
+  $('favorite').value = 'Roblox';
+
+  if (!user) {
+    renderAdminNews();
+    return;
+  }
+
+  try {
+    const snapshot = await getDoc(
+      doc(db, 'usuarios', user.uid)
+    );
+
+    if (auth.currentUser?.uid !== user.uid) return;
+
+    if (snapshot.exists()) {
+      const profile = snapshot.data();
+
+      $('username').value = profile.nombre || '';
+      $('bio').value = profile.bio || '';
+
+      if ([...$('favorite').options].some(
+        option => option.value === profile.juego
+      )) {
+        $('favorite').value = profile.juego;
+      }
+
+      $('topname').textContent =
+        profile.nombre || $('topname').textContent;
+    }
+  } catch (error) {
+    status('No se pudo cargar el perfil: ' + errorMessage(error), true);
+  }
+
+  await checkAdmin(user);
+
+  if (auth.currentUser?.uid === user.uid) {
+    renderAdminNews();
+  }
+});
+
+// ACTIVAR NOTICIAS
+startNews();
 </script>
 </body>
 </html>
